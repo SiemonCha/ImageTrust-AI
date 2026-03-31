@@ -3,6 +3,17 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Dataset files
+data/  
+
+# macOS
+.DS_Store
+.vscode/
+
+# ML specific
+saved_models/
+sample_images/
+
 # C extensions
 *.so
 
