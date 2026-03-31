@@ -51,6 +51,17 @@ if uploaded_file:
             if not metadata["has_exif"]:
                 st.info(metadata["exif_note"])
 
+            # Grad-CAM
+            if "gradcam" in data:
+                st.markdown("### 🔥 Grad-CAM Explanation")
+                st.caption("Highlighted regions influenced the model's decision most.")
+                import base64
+                from PIL import Image
+                import io
+                cam_bytes = base64.b64decode(data["gradcam"])
+                cam_image = Image.open(io.BytesIO(cam_bytes))
+                st.image(cam_image, width=400)
+
             # Disclaimer
             st.markdown("---")
             st.warning(f"⚠️ {data['note']}")
