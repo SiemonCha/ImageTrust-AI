@@ -12,8 +12,11 @@ def build_model(pretrained=True):
     # Replace final layer for binary classification
     in_features = model.fc.in_features
     model.fc = nn.Sequential(
-        nn.Dropout(0.5),
-        nn.Linear(in_features, 1)
+        nn.Dropout(0.6),
+        nn.Linear(in_features, 256),
+        nn.ReLU(),
+        nn.Dropout(0.4),
+        nn.Linear(256, 1)
     )
     
     return model

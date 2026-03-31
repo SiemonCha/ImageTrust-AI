@@ -11,13 +11,22 @@ def train(epochs=10, batch_size=32, lr=1e-3):
     print(f"Using device: {device}")
 
     model = build_model().to(device)
+
+    # Unfreeze layer4 and fc for better learning
+    for name, param in model.named_parameters():
+        if "layer4" in name or "fc" in name:
+            param.requires_grad = True
+            
     train_loader, val_loader, _ = get_dataloaders(batch_size=batch_size)
 
     criterion = nn.BCEWithLogitsLoss()
-    optimizer = Adam(model.fc.parameters(), lr=lr)
+    optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4)
     scheduler = ReduceLROnPlateau(optimizer, patience=2)
 
     best_val_loss = float("inf")
+
+    early_stop_patience = 3
+    no_improve_count = 0
 
     for epoch in range(epochs):
         # Training
@@ -70,8 +79,14 @@ def train(epochs=10, batch_size=32, lr=1e-3):
         # Save best model
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
+            no_improve_count = 0
             torch.save(model.state_dict(), "saved_models/best_model.pth")
             print(f"  -> Best model saved")
+        else:
+            no_improve_count += 1
+            if no_improve_count >= early_stop_patience:
+                print(f"Early stopping at epoch {epoch+1}")
+                break
 
 
 if __name__ == "__main__":
