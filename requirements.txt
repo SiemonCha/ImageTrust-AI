@@ -18,6 +18,7 @@ fonttools==4.62.1
 fsspec==2026.3.0
 gitdb==4.0.12
 GitPython==3.1.46
+grad-cam==1.5.5
 h11==0.16.0
 idna==3.11
 Jinja2==3.1.6
@@ -64,6 +65,7 @@ torch==2.11.0
 torchvision==0.26.0
 tornado==6.5.5
 tqdm==4.67.3
+ttach==0.0.3
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2025.3
