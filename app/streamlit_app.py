@@ -38,6 +38,15 @@ if uploaded_file:
             else:
                 st.success(f"✅ **{label}** — Confidence: {confidence}%")
 
+            # Generator type
+            if "generator" in data:
+                gen = data["generator"]
+                st.markdown("### 🔬 Generator Type Detection")
+                st.write(f"**Detected:** {gen['generator_type']} — {gen['confidence']}%")
+                st.write("**Class Probabilities:**")
+                for cls, prob in gen["class_probabilities"].items():
+                    st.progress(int(prob), text=f"{cls}: {prob}%")
+
             # Metadata
             st.markdown("### 📋 Image Metadata")
             col1, col2 = st.columns(2)
