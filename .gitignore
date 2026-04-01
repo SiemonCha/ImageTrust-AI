@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # Dataset files
-data/  
+/data/  
 
 # macOS
 .DS_Store
