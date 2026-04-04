@@ -65,10 +65,18 @@ def load_generator_model(model_path=GENERATOR_MODEL_PATH):
     """
     Loads the 4-class generator type classifier from a saved checkpoint.
     Classes: Real, GAN, Diffusion, Other (defined in generator_loader.CLASS_NAMES)
+    Handles DataParallel prefix (module.) if model was trained with multiple GPUs.
     """
     from src.models.train_generator import build_multiclass_model
     model = build_multiclass_model(num_classes=4, pretrained=False)
-    model.load_state_dict(torch.load(model_path, map_location="cpu"))
+
+    state_dict = torch.load(model_path, map_location="cpu")
+
+    # Remove 'module.' prefix added by DataParallel when training on multiple GPUs
+    if any(k.startswith("module.") for k in state_dict.keys()):
+        state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
+
+    model.load_state_dict(state_dict)
     model.eval()
     return model
 
