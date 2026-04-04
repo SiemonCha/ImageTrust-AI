@@ -7,13 +7,30 @@ from src.data.loader import get_dataloaders
 
 
 def train(epochs=20, batch_size=32, lr=1e-4):
+    """
+    Trains EfficientNet-B0 for binary classification — used for V2 model comparison.
+    Identical training setup to train.py for fair comparison against ResNet18.
+
+    V2 Comparison Results:
+    - ResNet18:       94.5% val acc, 0.151 val loss, converged at epoch 5
+    - EfficientNet:   91.3% val acc, 0.207 val loss, converged at epoch 17
+
+    Conclusion: ResNet18 outperforms EfficientNet on this 30k dataset.
+    EfficientNet needs more data/epochs to show its advantage.
+    This file is kept for reproducibility — not used in production.
+
+    Key difference from train.py:
+    - Unfreezes features.8 (last EfficientNet block) instead of layer4
+    - EfficientNet uses features.N naming vs ResNet's layerN naming
+    """
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     print(f"Using device: {device}")
 
     model = build_efficientnet().to(device)
     train_loader, val_loader, _ = get_dataloaders(batch_size=batch_size)
 
-    # Unfreeze last conv block + classifier
+    # Unfreeze last conv block (features.8) + classifier
+    # EfficientNet uses features.0 through features.8 naming convention
     for name, param in model.named_parameters():
         if "features.8" in name or "classifier" in name:
             param.requires_grad = True

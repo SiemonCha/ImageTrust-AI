@@ -8,6 +8,13 @@ from src.data.loader import get_cross_dataset_loaders
 
 
 def evaluate(model, loader, device, criterion):
+    """
+    Evaluates model on a dataloader and returns full metrics.
+    Separated into its own function for reuse in both per-epoch validation
+    and final test evaluation.
+
+    Returns: avg_loss, accuracy, precision, recall, f1, confusion_matrix
+    """
     model.eval()
     all_preds, all_labels = [], []
     total_loss = 0
@@ -34,12 +41,32 @@ def evaluate(model, loader, device, criterion):
 
 
 def train(epochs=10, batch_size=32, lr=1e-4):
+    """
+    V3 Cross-Dataset Validation experiment.
+    Trains on seen generators, evaluates on unseen generators.
+
+    Purpose: Measure how well the model generalises to AI generators
+    it has never encountered during training.
+
+    Seen generators (train): Stable Diffusion, StyleGAN2, DDPM
+    Unseen generators (test): Glide, Latent Diffusion
+
+    V3 Finding:
+    - Train accuracy: ~94%
+    - Unseen test accuracy: ~57% (barely above random chance)
+    - Conclusion: Model learns generator-specific artifacts, not universal AI patterns
+    - This is the generalisation gap problem documented in the project README
+
+    Saves checkpoint to: saved_models/cross_val_best.pth
+    Note: This model is NOT used in production — it's a research experiment only.
+    """
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     print(f"Using device: {device}")
 
     train_loader, test_loader = get_cross_dataset_loaders(batch_size=batch_size)
 
     model = build_model().to(device)
+    # Unfreeze layer4 and fc — same setup as production binary classifier
     for name, param in model.named_parameters():
         if "layer4" in name or "fc" in name:
             param.requires_grad = True
@@ -74,7 +101,7 @@ def train(epochs=10, batch_size=32, lr=1e-4):
         train_acc = correct / total
         avg_train_loss = train_loss / len(train_loader)
 
-        # Validate on unseen generators
+        # Evaluate on unseen generators after each epoch
         val_loss, acc, prec, rec, f1, _ = evaluate(model, test_loader, device, criterion)
         scheduler.step(val_loss)
 
@@ -93,7 +120,7 @@ def train(epochs=10, batch_size=32, lr=1e-4):
                 print(f"Early stopping at epoch {epoch+1}")
                 break
 
-    # Final evaluation
+    # Final evaluation with full metrics
     print("\n--- Final Evaluation on Unseen Generators ---")
     _, acc, prec, rec, f1, cm = evaluate(model, test_loader, device, criterion)
     print(f"Accuracy:  {acc:.4f}")
