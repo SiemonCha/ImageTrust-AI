@@ -59,6 +59,8 @@ def analyze_image(image):
     # Build markdown-formatted result string for Gradio Markdown component
     result_text = f"**{label}** — Confidence: {confidence}%\n\n"
     result_text += f"⚠️ This is a model-based estimate, not definitive proof.\n\n"
+    result_text += f"📌 **Note:** Model performs best on Stable Diffusion, StyleGAN, and DDPM images. "
+    result_text += f"Performance drops on unseen generators (DALL-E, MidJourney).\n\n"
 
     # Generator type section — shows architecture family
     gen_type = generator_result["generator_type"]
