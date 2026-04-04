@@ -62,16 +62,19 @@ def analyze_image(image):
     result_text += f"📌 **Note:** Model performs best on Stable Diffusion, StyleGAN, and DDPM images. "
     result_text += f"Performance drops on unseen generators (DALL-E, MidJourney).\n\n"
 
-    # Generator type section — shows architecture family
-    gen_type = generator_result["generator_type"]
-    gen_conf = generator_result["confidence"]
-    result_text += f"**Generator Type:** {gen_type} ({gen_conf}%)\n\n"
-    result_text += "**Class Probabilities:**\n"
-    for cls, prob in generator_result["class_probabilities"].items():
-        result_text += f"- {cls}: {prob}%\n"
+    # Generator type section — only shown when image is predicted AI-Generated
+    # No point showing generator type if image is classified as real
+    if label == "AI-Generated":
+        gen_type = generator_result["generator_type"]
+        gen_conf = generator_result["confidence"]
+        result_text += f"**Generator Type:** {gen_type} ({gen_conf}%)\n\n"
+        result_text += "**Class Probabilities:**\n"
+        for cls, prob in generator_result["class_probabilities"].items():
+            result_text += f"- {cls}: {prob}%\n"
+        result_text += "\n"
 
     # Metadata section
-    result_text += f"\n**Metadata:**\n"
+    result_text += f"**Metadata:**\n"
     result_text += f"- Format: {metadata['format']}\n"
     result_text += f"- Dimensions: {metadata['dimensions']}\n"
     result_text += f"- File Size: {metadata['file_size_kb']} KB\n"
